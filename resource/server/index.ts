@@ -12,6 +12,61 @@ function generateVin(): string {
   return vin;
 }
 
+const temporaryKeys = new Map<number, Set<string>>();
+
+function addTemporaryKey(source: number, vin: string) {
+  let playerTemp = temporaryKeys.get(source);
+  if (!playerTemp) {
+    playerTemp = new Set<string>();
+    temporaryKeys.set(source, playerTemp);
+  }
+  playerTemp.add(vin);
+  TriggerClientEvent("ox_vehiclekeys:addTempKey", source, vin);
+}
+
+function removeTemporaryKey(source: number, vin: string) {
+  const playerTemp = temporaryKeys.get(source);
+  if (playerTemp) {
+    playerTemp.delete(vin);
+    TriggerClientEvent("ox_vehiclekeys:removeTempKey", source, vin);
+  }
+}
+
+function playerHasKey(source: number, vin: string): boolean {
+  const playerTemp = temporaryKeys.get(source);
+  if (playerTemp && playerTemp.has(vin)) return true;
+
+  const count = (exports as any).ox_inventory.Search(source, "count", "carkey", { vin: vin });
+  return count > 0;
+}
+
+exports("AddKey", (source: number, vin: string) => {
+  addTemporaryKey(source, vin);
+});
+
+exports("RemoveKey", (source: number, vin: string) => {
+  removeTemporaryKey(source, vin);
+});
+
+exports("HasKey", (source: number, vin: string) => {
+  return playerHasKey(source, vin);
+});
+
+onNet("ox_vehiclekeys:addTempKey", (vin: string) => {
+  const source = (global as any).source;
+  addTemporaryKey(source, vin);
+});
+
+onNet("ox_vehiclekeys:removeTempKey", (vin: string) => {
+  const source = (global as any).source;
+  removeTemporaryKey(source, vin);
+});
+
+on("playerDropped", () => {
+  const source = (global as any).source;
+  temporaryKeys.delete(source);
+});
+
 // Map to track processed entity IDs temporarily to avoid double processing
 const processedEntities = new Set<number>();
 
@@ -82,7 +137,7 @@ onNet("ox_vehiclekeys:toggleLock", (vehicleNetId: number) => {
   if (!vin) return;
 
   // Verify player actually has the key for this vehicle on the server side
-  const hasKey = (exports as any).ox_inventory.Search(source, "count", "carkey", { vin: vin }) > 0;
+  const hasKey = playerHasKey(source, vin);
   if (!hasKey) {
     console.log(`[ox_vehiclekeys] Player ${source} attempted to lock/unlock vehicle ${vehicle} without a key!`);
     return;
@@ -107,7 +162,7 @@ onNet("ox_vehiclekeys:toggleEngine", (vehicleNetId: number) => {
   if (!vin) return;
 
   // Check key or hotwire
-  const hasKey = (exports as any).ox_inventory.Search(source, "count", "carkey", { vin: vin }) > 0;
+  const hasKey = playerHasKey(source, vin);
   const isHotwired = Entity(vehicle).state.hotwired || false;
 
   if (!hasKey && !isHotwired) return;

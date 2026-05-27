@@ -15,6 +15,35 @@ import Locale from "common/locale";
 // Map to avoid playing beep/lights on initial vehicle spawn/stream-in
 const initializedVehicles = new Set<number>();
 const spawnedPeds: number[] = [];
+const temporaryKeys = new Set<string>();
+
+function playerHasKey(vin: string): boolean {
+  if (temporaryKeys.has(vin)) return true;
+  const count = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin });
+  return count > 0;
+}
+
+exports("AddKey", (vin: string) => {
+  temporaryKeys.add(vin);
+  TriggerServerEvent("ox_vehiclekeys:addTempKey", vin);
+});
+
+exports("RemoveKey", (vin: string) => {
+  temporaryKeys.delete(vin);
+  TriggerServerEvent("ox_vehiclekeys:removeTempKey", vin);
+});
+
+exports("HasKey", (vin: string) => {
+  return playerHasKey(vin);
+});
+
+onNet("ox_vehiclekeys:addTempKey", (vin: string) => {
+  temporaryKeys.add(vin);
+});
+
+onNet("ox_vehiclekeys:removeTempKey", (vin: string) => {
+  temporaryKeys.delete(vin);
+});
 
 // Helper function to find the closest vehicle
 function getClosestVehicle(): number | null {
@@ -127,8 +156,7 @@ function toggleVehicleLock() {
     return;
   }
 
-  const keyCount = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin });
-  if (keyCount > 0) {
+  if (playerHasKey(vin)) {
     const ped = PlayerPedId();
     const isPlayerInVeh = GetVehiclePedIsIn(ped, false) !== 0;
 
@@ -170,7 +198,7 @@ function toggleVehicleEngine() {
   const vin = Entity(vehicle).state.vin;
   if (!vin) return;
 
-  const hasKey = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin }) > 0;
+  const hasKey = playerHasKey(vin);
   const isHotwired = Entity(vehicle).state.hotwired || false;
 
   if (!hasKey && !isHotwired) {
@@ -214,7 +242,7 @@ function startEngineMonitor(vehicle: number) {
     const vin = Entity(currentVehicle).state.vin;
     if (!vin) return;
 
-    const hasKey = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin }) > 0;
+    const hasKey = playerHasKey(vin);
     const isHotwired = Entity(currentVehicle).state.hotwired || false;
     const isEngineRunning = Entity(currentVehicle).state.engine || false;
 
@@ -256,7 +284,7 @@ async function toggleHotwire() {
   const vin = Entity(vehicle).state.vin;
   if (!vin) return;
 
-  const hasKey = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin }) > 0;
+  const hasKey = playerHasKey(vin);
   if (hasKey) {
     notify({
       title: Locale("ui.vehicle_keys"),
