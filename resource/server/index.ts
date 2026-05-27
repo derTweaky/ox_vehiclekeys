@@ -12,29 +12,25 @@ function generateVin(): string {
   return vin;
 }
 
-const temporaryKeys = new Map<number, Set<string>>();
-
 function addTemporaryKey(source: number, vin: string) {
-  let playerTemp = temporaryKeys.get(source);
-  if (!playerTemp) {
-    playerTemp = new Set<string>();
-    temporaryKeys.set(source, playerTemp);
+  const keys: string[] = Player(source).state.temporaryKeys || [];
+  if (!keys.includes(vin)) {
+    keys.push(vin);
+    Player(source).state.set("temporaryKeys", keys, true);
   }
-  playerTemp.add(vin);
-  TriggerClientEvent("ox_vehiclekeys:addTempKey", source, vin);
 }
 
 function removeTemporaryKey(source: number, vin: string) {
-  const playerTemp = temporaryKeys.get(source);
-  if (playerTemp) {
-    playerTemp.delete(vin);
-    TriggerClientEvent("ox_vehiclekeys:removeTempKey", source, vin);
+  let keys: string[] = Player(source).state.temporaryKeys || [];
+  if (keys.includes(vin)) {
+    keys = keys.filter(k => k !== vin);
+    Player(source).state.set("temporaryKeys", keys, true);
   }
 }
 
 function playerHasKey(source: number, vin: string): boolean {
-  const playerTemp = temporaryKeys.get(source);
-  if (playerTemp && playerTemp.has(vin)) return true;
+  const keys: string[] = Player(source).state.temporaryKeys || [];
+  if (keys.includes(vin)) return true;
 
   const count = (exports as any).ox_inventory.Search(source, "count", "carkey", { vin: vin });
   return count > 0;
@@ -60,11 +56,6 @@ onNet("ox_vehiclekeys:addTempKey", (vin: string) => {
 onNet("ox_vehiclekeys:removeTempKey", (vin: string) => {
   const source = (global as any).source;
   removeTemporaryKey(source, vin);
-});
-
-on("playerDropped", () => {
-  const source = (global as any).source;
-  temporaryKeys.delete(source);
 });
 
 // Map to track processed entity IDs temporarily to avoid double processing

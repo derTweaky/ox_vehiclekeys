@@ -15,34 +15,25 @@ import Locale from "common/locale";
 // Map to avoid playing beep/lights on initial vehicle spawn/stream-in
 const initializedVehicles = new Set<number>();
 const spawnedPeds: number[] = [];
-const temporaryKeys = new Set<string>();
-
 function playerHasKey(vin: string): boolean {
-  if (temporaryKeys.has(vin)) return true;
+  const serverId = GetPlayerServerId(PlayerId());
+  const keys: string[] = Player(serverId).state.temporaryKeys || [];
+  if (keys.includes(vin)) return true;
+
   const count = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin });
   return count > 0;
 }
 
 exports("AddKey", (vin: string) => {
-  temporaryKeys.add(vin);
   TriggerServerEvent("ox_vehiclekeys:addTempKey", vin);
 });
 
 exports("RemoveKey", (vin: string) => {
-  temporaryKeys.delete(vin);
   TriggerServerEvent("ox_vehiclekeys:removeTempKey", vin);
 });
 
 exports("HasKey", (vin: string) => {
   return playerHasKey(vin);
-});
-
-onNet("ox_vehiclekeys:addTempKey", (vin: string) => {
-  temporaryKeys.add(vin);
-});
-
-onNet("ox_vehiclekeys:removeTempKey", (vin: string) => {
-  temporaryKeys.delete(vin);
 });
 
 // Helper function to find the closest vehicle
