@@ -1,0 +1,21 @@
+{
+  "locksmiths": [
+    {
+      "name": "legion_locksmith",
+      "coords": [170.15, -1799.32, 28.31, 320.0],
+      "ped": "s_m_m_dockwork_01",
+      "keyCost": 100,
+      "blip": {
+        "enabled": true,
+        "sprite": 134,
+        "color": 3,
+        "scale": 0.8,
+        "label": "Locksmith"
+      }
+    }
+  ],
+  "hotwireKey": "H",
+  "lockKey": "L",
+  "engineKey": "G",
+  "enableLocksmithPeds": true
+}
