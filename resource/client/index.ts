@@ -10,6 +10,7 @@ import {
   skillCheck
 } from "@overextended/ox_lib/client";
 import { Vector3 } from "@overextended/core/vector";
+import Locale from "common/locale";
 
 // Map to avoid playing beep/lights on initial vehicle spawn/stream-in
 const initializedVehicles = new Set<number>();
@@ -104,8 +105,8 @@ AddStateBagChangeHandler("engine", null as any, async (bagName: string, key: str
   const ped = PlayerPedId();
   if (GetVehiclePedIsIn(ped, false) === vehicle && GetPedInVehicleSeat(vehicle, -1) === ped) {
     notify({
-      title: "Engine Control",
-      description: value ? "Engine started." : "Engine stopped.",
+      title: Locale("ui.engine_control"),
+      description: value ? Locale("success.engine_started") : Locale("success.engine_stopped"),
       type: value ? "success" : "error"
     });
   }
@@ -119,8 +120,8 @@ function toggleVehicleLock() {
   const vin = Entity(vehicle).state.vin;
   if (!vin) {
     notify({
-      title: "Vehicle Keys",
-      description: "This vehicle has no electronic lock system.",
+      title: Locale("ui.vehicle_keys"),
+      description: Locale("error.no_lock_system"),
       type: "error"
     });
     return;
@@ -152,8 +153,8 @@ function toggleVehicleLock() {
     TriggerServerEvent("ox_vehiclekeys:toggleLock", netId);
   } else {
     notify({
-      title: "Vehicle Keys",
-      description: "You do not have the key for this vehicle.",
+      title: Locale("ui.vehicle_keys"),
+      description: Locale("error.no_key_lock"),
       type: "error"
     });
   }
@@ -174,8 +175,8 @@ function toggleVehicleEngine() {
 
   if (!hasKey && !isHotwired) {
     notify({
-      title: "Engine Control",
-      description: "You do not have the keys to start the engine.",
+      title: Locale("ui.engine_control"),
+      description: Locale("error.no_key_engine"),
       type: "error"
     });
     return;
@@ -225,8 +226,8 @@ function startEngineMonitor(vehicle: number) {
 
       if (IsDisabledControlJustPressed(0, 71)) {
         notify({
-          title: "Vehicle Keys",
-          description: `You do not have the keys. Press [${Config.hotwireKey || "H"}] to hotwire.`,
+          title: Locale("ui.vehicle_keys"),
+          description: Locale("error.no_keys_hotwire", Config.hotwireKey || "H"),
           type: "error"
         });
       }
@@ -258,8 +259,8 @@ async function toggleHotwire() {
   const hasKey = (exports as any).ox_inventory.Search("count", "carkey", { vin: vin }) > 0;
   if (hasKey) {
     notify({
-      title: "Vehicle Keys",
-      description: "You already have the keys for this vehicle.",
+      title: Locale("ui.vehicle_keys"),
+      description: Locale("error.already_has_key"),
       type: "inform"
     });
     return;
@@ -267,8 +268,8 @@ async function toggleHotwire() {
 
   if (Entity(vehicle).state.hotwired) {
     notify({
-      title: "Vehicle Keys",
-      description: "This vehicle is already hotwired.",
+      title: Locale("ui.vehicle_keys"),
+      description: Locale("error.already_hotwired"),
       type: "inform"
     });
     return;
@@ -278,8 +279,8 @@ async function toggleHotwire() {
   TaskStartScenarioInPlace(ped, "PROP_HUMAN_BUM_BIN", 0, true);
 
   notify({
-    title: "Hotwiring",
-    description: "Attempting to hotwire the ignition...",
+    title: Locale("ui.hotwiring_title"),
+    description: Locale("info.hotwiring"),
     type: "inform"
   });
 
@@ -292,14 +293,14 @@ async function toggleHotwire() {
     const netId = NetworkGetNetworkIdFromEntity(vehicle);
     TriggerServerEvent("ox_vehiclekeys:setHotwired", netId, true);
     notify({
-      title: "Success",
-      description: "You have hotwired the vehicle ignition!",
+      title: Locale("ui.success_title"),
+      description: Locale("success.hotwired"),
       type: "success"
     });
   } else {
     notify({
-      title: "Failed",
-      description: "You failed to hotwire the vehicle.",
+      title: Locale("ui.failed_title"),
+      description: Locale("error.hotwire_failed"),
       type: "error"
     });
   }
@@ -310,8 +311,8 @@ async function openLocksmithMenu(locksmith: any) {
   hideTextUI();
 
   notify({
-    title: "Locksmith",
-    description: "Accessing vehicle database...",
+    title: Locale("ui.locksmith_title"),
+    description: Locale("info.locksmith_db"),
     type: "inform"
   });
 
@@ -319,8 +320,8 @@ async function openLocksmithMenu(locksmith: any) {
 
   if (!vehicles || (vehicles as any).length === 0) {
     notify({
-      title: "Locksmith",
-      description: "You do not own any registered vehicles.",
+      title: Locale("ui.locksmith_title"),
+      description: Locale("error.no_owned_vehicles"),
       type: "error"
     });
     return;
@@ -328,20 +329,27 @@ async function openLocksmithMenu(locksmith: any) {
 
   const options: any[] = (vehicles as any).map((veh: any) => {
     return {
-      title: `${veh.model || "Vehicle"} (${veh.plate})`,
-      description: `Duplicate Key - $${locksmith.keyCost || 100}\nVIN: ${veh.vin}`,
+      title: Locale("ui.locksmith_option_title", veh.model || "Vehicle", veh.plate),
+      description: Locale("ui.locksmith_option_desc", String(locksmith.keyCost || 100), veh.vin),
       onSelect: async () => {
         const result = await triggerServerCallback("ox_vehiclekeys:buyKey", null, veh.vin, veh.plate);
         if (result && (result as any).success) {
           notify({
-            title: "Success",
-            description: `Purchased a new key for vehicle ${veh.plate}!`,
+            title: Locale("ui.success_title"),
+            description: Locale("success.buy_key", veh.plate),
             type: "success"
           });
         } else {
+          // Translate known errors
+          const rawReason = (result as any)?.reason || "Failed to purchase key";
+          const reasonKey = `error.${rawReason.toLowerCase().replace(/\s+/g, "_")}`;
+          let errorMsg = Locale(reasonKey as any);
+          if (errorMsg === reasonKey) {
+            errorMsg = rawReason;
+          }
           notify({
-            title: "Failed",
-            description: (result as any)?.reason || "Failed to purchase key.",
+            title: Locale("ui.failed_title"),
+            description: errorMsg,
             type: "error"
           });
         }
@@ -351,7 +359,7 @@ async function openLocksmithMenu(locksmith: any) {
 
   registerContext({
     id: "locksmith_menu",
-    title: "Locksmith Services",
+    title: Locale("ui.locksmith_menu_title"),
     options: options
   });
 
@@ -421,7 +429,7 @@ function spawnLocksmiths() {
 
     locksmithZone.onEnter = () => {
       isInside = true;
-      showTextUI("[E] Locksmith");
+      showTextUI(Locale("ui.textui_locksmith"));
 
       // Monitor E key press inside the zone
       const checkKeyTick = setTick(() => {

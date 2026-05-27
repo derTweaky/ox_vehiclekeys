@@ -1,4 +1,5 @@
 import { onClientCallback } from "@overextended/ox_lib/server";
+import Locale from "common/locale";
 
 // Helper function to generate a pseudo-VIN (Vehicle Identification Number)
 function generateVin(): string {
@@ -184,7 +185,7 @@ onClientCallback("ox_vehiclekeys:buyKey", async (source: number, vin: string, pl
     // Give key item with metadata
     const given = (exports as any).ox_inventory.AddItem(source, "carkey", 1, {
       vin: vin,
-      description: `Key for vehicle with plate: ${plate}`
+      description: Locale("ui.key_description", plate)
     });
 
     if (!given) {

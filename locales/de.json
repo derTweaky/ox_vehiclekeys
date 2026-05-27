@@ -1,0 +1,48 @@
+{
+  "starting": {
+    "server": "Starte %s:${server}",
+    "client": "Starte %s:${client}"
+  },
+  "server": "Server",
+  "client": "Client",
+  "error": {
+    "no_lock_system": "Dieses Fahrzeug hat kein elektronisches Schließsystem.",
+    "no_key_lock": "Du hast keinen Schlüssel für dieses Fahrzeug.",
+    "no_key_engine": "Du hast keinen Schlüssel, um den Motor zu starten.",
+    "no_keys_hotwire": "Du hast keinen Schlüssel. Drücke [%s] zum Kurzschließen.",
+    "already_has_key": "Du hast bereits den Schlüssel für dieses Fahrzeug.",
+    "already_hotwired": "Dieses Fahrzeug ist bereits kurzgeschlossen.",
+    "hotwire_failed": "Kurzschließen fehlgeschlagen.",
+    "no_owned_vehicles": "Du besitzt keine registrierten Fahrzeuge.",
+    "buy_key_failed": "Kauf des Schlüssels fehlgeschlagen.",
+    "player_not_loaded": "Spieler nicht geladen",
+    "not_owner": "Dieses Fahrzeug gehört nicht dir",
+    "insufficient_funds": "Unzureichende Mittel",
+    "deduct_failed": "Geld konnte nicht abgezogen werden",
+    "inventory_full": "Inventar voll",
+    "db_error": "Datenbankfehler"
+  },
+  "success": {
+    "engine_started": "Motor gestartet.",
+    "engine_stopped": "Motor gestoppt.",
+    "hotwired": "Du hast die Zündung des Fahrzeugs kurzgeschlossen!",
+    "buy_key": "Neuen Schlüssel für Fahrzeug %s gekauft!"
+  },
+  "info": {
+    "hotwiring": "Versuche, die Zündung kurzzuschließen...",
+    "locksmith_db": "Greife auf Fahrzeugdatenbank zu..."
+  },
+  "ui": {
+    "engine_control": "Motorsteuerung",
+    "vehicle_keys": "Fahrzeugschlüssel",
+    "hotwiring_title": "Kurzschließen",
+    "locksmith_title": "Schlüsseldienst",
+    "success_title": "Erfolgreich",
+    "failed_title": "Fehlgeschlagen",
+    "locksmith_menu_title": "Schlüsseldienst-Dienstleistungen",
+    "locksmith_option_title": "%s (%s)",
+    "locksmith_option_desc": "Ersatzschlüssel - $%s\nVIN: %s",
+    "textui_locksmith": "[E] Schlüsseldienst",
+    "key_description": "Schlüssel für Fahrzeug mit Kennzeichen: %s"
+  }
+}

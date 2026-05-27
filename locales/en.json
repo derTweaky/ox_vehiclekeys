@@ -4,5 +4,45 @@
     "client": "Starting %s:${client}"
   },
   "server": "server",
-  "client": "client"
+  "client": "client",
+  "error": {
+    "no_lock_system": "This vehicle has no electronic lock system.",
+    "no_key_lock": "You do not have the key for this vehicle.",
+    "no_key_engine": "You do not have the keys to start the engine.",
+    "no_keys_hotwire": "You do not have the keys. Press [%s] to hotwire.",
+    "already_has_key": "You already have the keys for this vehicle.",
+    "already_hotwired": "This vehicle is already hotwired.",
+    "hotwire_failed": "You failed to hotwire the vehicle.",
+    "no_owned_vehicles": "You do not own any registered vehicles.",
+    "buy_key_failed": "Failed to purchase key.",
+    "player_not_loaded": "Player not loaded",
+    "not_owner": "You do not own this vehicle",
+    "insufficient_funds": "Insufficient funds",
+    "deduct_failed": "Failed to deduct cash",
+    "inventory_full": "Inventory full",
+    "db_error": "Database error"
+  },
+  "success": {
+    "engine_started": "Engine started.",
+    "engine_stopped": "Engine stopped.",
+    "hotwired": "You have hotwired the vehicle ignition!",
+    "buy_key": "Purchased a new key for vehicle %s!"
+  },
+  "info": {
+    "hotwiring": "Attempting to hotwire the ignition...",
+    "locksmith_db": "Accessing vehicle database..."
+  },
+  "ui": {
+    "engine_control": "Engine Control",
+    "vehicle_keys": "Vehicle Keys",
+    "hotwiring_title": "Hotwiring",
+    "locksmith_title": "Locksmith",
+    "success_title": "Success",
+    "failed_title": "Failed",
+    "locksmith_menu_title": "Locksmith Services",
+    "locksmith_option_title": "%s (%s)",
+    "locksmith_option_desc": "Duplicate Key - $%s\nVIN: %s",
+    "textui_locksmith": "[E] Locksmith",
+    "key_description": "Key for vehicle with plate: %s"
+  }
 }
