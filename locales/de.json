@@ -20,17 +20,23 @@
     "insufficient_funds": "Unzureichende Mittel",
     "deduct_failed": "Geld konnte nicht abgezogen werden",
     "inventory_full": "Inventar voll",
-    "db_error": "Datenbankfehler"
+    "db_error": "Datenbankfehler",
+    "no_vehicle_nearby": "Kein Fahrzeug in der Nähe.",
+    "veh_already_unlocked": "Dieses Fahrzeug ist bereits entriegelt.",
+    "lockpick_broke": "Dein %s ist abgebrochen!",
+    "lockpick_failed": "Du hast es nicht geschafft, das Schloss zu knacken."
   },
   "success": {
     "engine_started": "Motor gestartet.",
     "engine_stopped": "Motor gestoppt.",
     "hotwired": "Du hast die Zündung des Fahrzeugs kurzgeschlossen!",
-    "buy_key": "Neuen Schlüssel für Fahrzeug %s gekauft!"
+    "buy_key": "Neuen Schlüssel für Fahrzeug %s gekauft!",
+    "lockpick_success": "Du hast das Fahrzeug erfolgreich entriegelt!"
   },
   "info": {
     "hotwiring": "Versuche, die Zündung kurzzuschließen...",
-    "locksmith_db": "Greife auf Fahrzeugdatenbank zu..."
+    "locksmith_db": "Greife auf Fahrzeugdatenbank zu...",
+    "lockpicking_started": "Versuche, das Schloss zu knacken..."
   },
   "ui": {
     "engine_control": "Motorsteuerung",
@@ -43,6 +49,7 @@
     "locksmith_option_title": "%s (%s)",
     "locksmith_option_desc": "Ersatzschlüssel - $%s\nVIN: %s",
     "textui_locksmith": "[E] Schlüsseldienst",
-    "key_description": "Schlüssel für Fahrzeug mit Kennzeichen: %s"
+    "key_description": "Schlüssel für Fahrzeug mit Kennzeichen: %s",
+    "lockpicking_title": "Schloss knacken"
   }
 }

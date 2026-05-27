@@ -20,17 +20,23 @@
     "insufficient_funds": "Insufficient funds",
     "deduct_failed": "Failed to deduct cash",
     "inventory_full": "Inventory full",
-    "db_error": "Database error"
+    "db_error": "Database error",
+    "no_vehicle_nearby": "No vehicle nearby.",
+    "veh_already_unlocked": "This vehicle is already unlocked.",
+    "lockpick_broke": "Your %s broke!",
+    "lockpick_failed": "You failed to pick the lock."
   },
   "success": {
     "engine_started": "Engine started.",
     "engine_stopped": "Engine stopped.",
     "hotwired": "You have hotwired the vehicle ignition!",
-    "buy_key": "Purchased a new key for vehicle %s!"
+    "buy_key": "Purchased a new key for vehicle %s!",
+    "lockpick_success": "You successfully unlocked the vehicle!"
   },
   "info": {
     "hotwiring": "Attempting to hotwire the ignition...",
-    "locksmith_db": "Accessing vehicle database..."
+    "locksmith_db": "Accessing vehicle database...",
+    "lockpicking_started": "Attempting to pick the lock..."
   },
   "ui": {
     "engine_control": "Engine Control",
@@ -43,6 +49,7 @@
     "locksmith_option_title": "%s (%s)",
     "locksmith_option_desc": "Duplicate Key - $%s\nVIN: %s",
     "textui_locksmith": "[E] Locksmith",
-    "key_description": "Key for vehicle with plate: %s"
+    "key_description": "Key for vehicle with plate: %s",
+    "lockpicking_title": "Lockpicking"
   }
 }

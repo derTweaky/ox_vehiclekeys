@@ -17,5 +17,23 @@
   "hotwireKey": "H",
   "lockKey": "L",
   "engineKey": "G",
-  "enableLocksmithPeds": true
+  "enableLocksmithPeds": true,
+  "lockpicking": {
+    "items": {
+      "lockpick": {
+        "label": "Lockpick",
+        "breakChance": 50,
+        "minigame": "ox_lib",
+        "difficulty": ["medium", "easy", "medium"],
+        "keys": ["w", "a", "s", "d"]
+      },
+      "advancedlockpick": {
+        "label": "Advanced Lockpick",
+        "breakChance": 20,
+        "minigame": "ox_lib",
+        "difficulty": ["easy", "easy"],
+        "keys": ["w", "a", "s", "d"]
+      }
+    }
+  }
 }

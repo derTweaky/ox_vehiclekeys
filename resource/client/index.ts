@@ -505,6 +505,138 @@ RegisterCommand("shuff", () => {
   }
 }, false);
 
+// Lockpicking System Minigames and Events
+const minigames: Record<string, (item: string, config: any) => Promise<boolean>> = {
+  ox_lib: async (item, config) => {
+    return await skillCheck(config.difficulty || ["medium", "easy"], config.keys || ["w", "a", "s", "d"]);
+  }
+};
+
+exports("registerMinigame", (name: string, handler: (item: string, config: any) => Promise<boolean>) => {
+  minigames[name] = handler;
+});
+
+async function startLockpicking(itemName: string) {
+  const itemsConfig = (Config as any).lockpicking?.items;
+  if (!itemsConfig || !itemsConfig[itemName]) return;
+
+  const itemData = itemsConfig[itemName];
+  const ped = PlayerPedId();
+  let vehicle = GetVehiclePedIsIn(ped, false);
+
+  if (vehicle === 0) {
+    const coords = GetEntityCoords(ped, true);
+    const [cx = 0.0, cy = 0.0, cz = 0.0] = coords;
+    const vehicles = GetGamePool("CVehicle");
+    let closestVehicle = 0;
+    let minDistance = 2.5;
+
+    for (const veh of vehicles) {
+      const vehCoords = GetEntityCoords(veh, true);
+      const [vx = 0.0, vy = 0.0, vz = 0.0] = vehCoords;
+      const distance = Vdist(cx, cy, cz, vx, vy, vz);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestVehicle = veh;
+      }
+    }
+    vehicle = closestVehicle;
+  }
+
+  if (vehicle === 0 || !DoesEntityExist(vehicle)) {
+    notify({
+      title: Locale("ui.lockpicking_title"),
+      description: Locale("error.no_vehicle_nearby"),
+      type: "error"
+    });
+    return;
+  }
+
+  const isLocked = Entity(vehicle).state.locked || false;
+  if (!isLocked) {
+    notify({
+      title: Locale("ui.lockpicking_title"),
+      description: Locale("error.veh_already_unlocked"),
+      type: "inform"
+    });
+    return;
+  }
+
+  const isInside = GetVehiclePedIsIn(ped, false) !== 0;
+  if (isInside) {
+    const animDict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@";
+    RequestAnimDict(animDict);
+    let attempts = 0;
+    const interval = setInterval(() => {
+      if (HasAnimDictLoaded(animDict)) {
+        clearInterval(interval);
+        TaskPlayAnim(ped, animDict, "machinery_contrl_loop_player", 8.0, 8.0, -1, 49, 0, false, false, false);
+      } else {
+        attempts++;
+        if (attempts > 10) clearInterval(interval);
+      }
+    }, 50);
+  } else {
+    TaskStartScenarioInPlace(ped, "WORLD_HUMAN_WELDING", 0, true);
+  }
+
+  notify({
+    title: Locale("ui.lockpicking_title"),
+    description: Locale("info.lockpicking_started"),
+    type: "inform"
+  });
+
+  const minigameName = itemData.minigame || "ox_lib";
+  const minigameHandler = minigames[minigameName];
+  let success = false;
+
+  if (minigameHandler) {
+    try {
+      success = await minigameHandler(itemName, itemData);
+    } catch (err) {
+      console.error(`[^1ox_vehiclekeys^7] Error running minigame ${minigameName}:`, err);
+    }
+  } else {
+    console.error(`[^1ox_vehiclekeys^7] Minigame handler '${minigameName}' not found!`);
+  }
+
+  ClearPedTasks(ped);
+
+  const netId = NetworkGetNetworkIdFromEntity(vehicle);
+  TriggerServerEvent("ox_vehiclekeys:lockpickComplete", netId, itemName, success);
+}
+
+on("ox_vehiclekeys:useLockpick", (data: { name: string }) => {
+  if (data && data.name) {
+    startLockpicking(data.name);
+  }
+});
+
+onNet("ox_vehiclekeys:lockpickResult", (success: boolean, broke: boolean, itemName: string) => {
+  const itemsConfig = (Config as any).lockpicking?.items;
+  const label = itemsConfig?.[itemName]?.label || itemName;
+
+  if (success) {
+    notify({
+      title: Locale("ui.lockpicking_title"),
+      description: Locale("success.lockpick_success"),
+      type: "success"
+    });
+  } else if (broke) {
+    notify({
+      title: Locale("ui.lockpicking_title"),
+      description: Locale("error.lockpick_broke", label),
+      type: "error"
+    });
+  } else {
+    notify({
+      title: Locale("ui.lockpicking_title"),
+      description: Locale("error.lockpick_failed"),
+      type: "error"
+    });
+  }
+});
+
 // Cleanup peds on resource stop
 on("onResourceStop", (resourceName: string) => {
   if (GetCurrentResourceName() !== resourceName) return;

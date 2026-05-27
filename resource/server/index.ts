@@ -1,5 +1,6 @@
 import { onClientCallback } from "@overextended/ox_lib/server";
 import Locale from "common/locale";
+import Config from "common/config";
 
 // Helper function to generate a pseudo-VIN (Vehicle Identification Number)
 function generateVin(): string {
@@ -198,5 +199,47 @@ onClientCallback("ox_vehiclekeys:buyKey", async (source: number, vin: string, pl
   } catch (error) {
     console.error(`[^1ox_vehiclekeys^7] Error during key purchase for vin ${vin}`, error);
     return { success: false, reason: "Database error" };
+  }
+});
+
+// Lockpick complete server validation
+onNet("ox_vehiclekeys:lockpickComplete", (vehicleNetId: number, itemName: string, success: boolean) => {
+  const source = (global as any).source;
+  const vehicle = NetworkGetEntityFromNetworkId(vehicleNetId);
+
+  if (vehicle === 0 || !DoesEntityExist(vehicle)) return;
+
+  const itemsConfig = (Config as any).lockpicking?.items;
+  if (!itemsConfig || !itemsConfig[itemName]) return;
+
+  const itemData = itemsConfig[itemName];
+
+  // Verify player has the item
+  const count = (exports as any).ox_inventory.GetItem(source, itemName, null, true);
+  if (count <= 0) {
+    console.warn(`[ox_vehiclekeys] Player ${source} attempted to lockpick without holding item ${itemName}!`);
+    return;
+  }
+
+  if (success) {
+    const isLocked = Entity(vehicle).state.locked || false;
+    if (isLocked) {
+      Entity(vehicle).state.locked = false;
+      TriggerClientEvent("ox_vehiclekeys:lockpickResult", source, true, false, itemName);
+    }
+  } else {
+    const breakChance = itemData.breakChance || 0;
+    const roll = Math.floor(Math.random() * 100);
+
+    if (roll < breakChance) {
+      const removed = (exports as any).ox_inventory.RemoveItem(source, itemName, 1);
+      if (removed) {
+        TriggerClientEvent("ox_vehiclekeys:lockpickResult", source, false, true, itemName);
+      } else {
+        TriggerClientEvent("ox_vehiclekeys:lockpickResult", source, false, false, itemName);
+      }
+    } else {
+      TriggerClientEvent("ox_vehiclekeys:lockpickResult", source, false, false, itemName);
+    }
   }
 });
