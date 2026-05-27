@@ -139,6 +139,11 @@ Make sure to pass the `vin` matching the vehicle's statebag `Entity(vehicle).sta
 
 You can interact with the vehicle keys system from other scripts using the exports below.
 
+> [!TIP]
+> Temporary keys are stored natively in the player's State Bag under `Player(source).state.temporaryKeys` (an array of VIN strings). This state bag is automatically replicated to the client, meaning external scripts can read keys directly without calling exports:
+> * **Server:** `Player(source).state.temporaryKeys`
+> * **Client:** `Player(serverId).state.temporaryKeys`
+
 ### Server-side Exports
 
 Manage keys (temporary or inventory checks) on the server (e.g., for vehicle rentals, job vehicles, robbery rewards):
