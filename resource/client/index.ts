@@ -22,13 +22,15 @@ function getClosestVehicle(): number | null {
   if (vehicle !== 0) return vehicle;
 
   const coords = GetEntityCoords(ped, true);
+  const [cx = 0.0, cy = 0.0, cz = 0.0] = coords;
   const vehicles = GetGamePool("CVehicle");
   let closestVehicle = null;
   let minDistance = 5.0; // 5 meters maximum distance
 
   for (const veh of vehicles) {
     const vehCoords = GetEntityCoords(veh, true);
-    const distance = Vdist(coords[0]!, coords[1]!, coords[2]!, vehCoords[0]!, vehCoords[1]!, vehCoords[2]!);
+    const [vx = 0.0, vy = 0.0, vz = 0.0] = vehCoords;
+    const distance = Vdist(cx, cy, cz, vx, vy, vz);
     if (distance < minDistance) {
       minDistance = distance;
       closestVehicle = veh;
@@ -46,15 +48,15 @@ async function playLockEffects(vehicle: number, locked: boolean) {
   // Flash hazard lights (Left + Right indicators)
   SetVehicleIndicatorLights(vehicle, 0, true);
   SetVehicleIndicatorLights(vehicle, 1, true);
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  await new Promise<void>((resolve) => setTimeout(() => resolve(), 200));
   SetVehicleIndicatorLights(vehicle, 0, false);
   SetVehicleIndicatorLights(vehicle, 1, false);
 
   if (!locked) { // Flash twice for unlock
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 200));
     SetVehicleIndicatorLights(vehicle, 0, true);
     SetVehicleIndicatorLights(vehicle, 1, true);
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 200));
     SetVehicleIndicatorLights(vehicle, 0, false);
     SetVehicleIndicatorLights(vehicle, 1, false);
   }
@@ -79,8 +81,10 @@ AddStateBagChangeHandler("locked", null as any, async (bagName: string, key: str
 
   // Only play effects if player is relatively close to the vehicle (visual optimization)
   const playerCoords = GetEntityCoords(PlayerPedId(), true);
+  const [px = 0.0, py = 0.0, pz = 0.0] = playerCoords;
   const vehCoords = GetEntityCoords(vehicle, true);
-  const distance = Vdist(playerCoords[0]!, playerCoords[1]!, playerCoords[2]!, vehCoords[0]!, vehCoords[1]!, vehCoords[2]!);
+  const [vx = 0.0, vy = 0.0, vz = 0.0] = vehCoords;
+  const distance = Vdist(px, py, pz, vx, vy, vz);
 
   if (distance <= 25.0) {
     playLockEffects(vehicle, value);
@@ -256,7 +260,7 @@ async function toggleHotwire() {
     notify({
       title: "Vehicle Keys",
       description: "You already have the keys for this vehicle.",
-      type: "info"
+      type: "inform"
     });
     return;
   }
@@ -265,7 +269,7 @@ async function toggleHotwire() {
     notify({
       title: "Vehicle Keys",
       description: "This vehicle is already hotwired.",
-      type: "info"
+      type: "inform"
     });
     return;
   }
@@ -276,7 +280,7 @@ async function toggleHotwire() {
   notify({
     title: "Hotwiring",
     description: "Attempting to hotwire the ignition...",
-    type: "info"
+    type: "inform"
   });
 
   // Run skillcheck
@@ -308,7 +312,7 @@ async function openLocksmithMenu(locksmith: any) {
   notify({
     title: "Locksmith",
     description: "Accessing vehicle database...",
-    type: "info"
+    type: "inform"
   });
 
   const vehicles = await triggerServerCallback("ox_vehiclekeys:getOwnedVehicles", null);
@@ -360,9 +364,11 @@ function spawnLocksmiths() {
 
   for (const locksmith of Config.locksmiths) {
     if (!locksmith.coords) continue;
+    const [lx = 0.0, ly = 0.0, lz = 0.0, lh = 0.0] = locksmith.coords;
+
     // 1. Blip
     if (locksmith.blip?.enabled) {
-      const blip = AddBlipForCoord(locksmith.coords[0], locksmith.coords[1], locksmith.coords[2]);
+      const blip = AddBlipForCoord(lx, ly, lz);
       SetBlipSprite(blip, locksmith.blip.sprite || 134);
       SetBlipColour(blip, locksmith.blip.color || 3);
       SetBlipScale(blip, locksmith.blip.scale || 0.8);
@@ -384,10 +390,10 @@ function spawnLocksmiths() {
           const ped = CreatePed(
             4,
             modelHash,
-            locksmith.coords[0],
-            locksmith.coords[1],
-            locksmith.coords[2] - 1.0,
-            locksmith.coords[3] || 0.0,
+            lx,
+            ly,
+            lz - 1.0,
+            lh,
             false,
             true
           );
@@ -408,7 +414,7 @@ function spawnLocksmiths() {
     }
 
     // 3. Create Sphere Zone (casted to any to avoid Vector3 duplicate type issues in TS compiler)
-    const zoneCoords = new Vector3(locksmith.coords[0], locksmith.coords[1], locksmith.coords[2]);
+    const zoneCoords = new Vector3(lx, ly, lz);
     const locksmithZone = Zone.Sphere(zoneCoords as any, 2.0);
 
     let isInside = false;
